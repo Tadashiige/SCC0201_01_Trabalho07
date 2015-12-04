@@ -4,8 +4,11 @@ _Pasta_para_trabalho 7_disciplina_de_ICC_2_
 <span style="color:blue">Pasta destinada para comportar trabalho 7 da disciplina usando uma IDE Eclipse, a priori.</span>
 
 *HAMBIENTE:* 
+
 _UBUNTU 14.04 LTS - 64BITS_
+
 _ECLIPSE - MARS_
+
 _LINGUAGEM C (MAKEFILE)_
 
 <img src="BN-GJ136_chess_J_20150109120327.jpg" alt="chess Image" style="width:70%;height:auto;">
