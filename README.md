@@ -14,8 +14,6 @@ _LINGUAGEM C (MAKEFILE)_
 	<img src="BN-GJ136_chess_J_20150109120327.jpg" alt="chess Image" style="width:50%;height:auto;">
 
 <p>
-<img src="BN-GJ136_chess_J_20150109120327.jpg" alt="chess Image" style="width:50%;height:auto;">
-
 O trabalho consiste na continuação do trabalho 6 a cerca de partida de Xadrez. Na etapa anterior foi feita a elaboração do código para listagem das possível jogadas para um determinado turno segundo a condição do tabuleiro dado pela notação FEN. AS jogadas possíveis são regradas pelo perigo de cheque, legalidade de movimentos especiais e as definições de movimentação para cada tipo de peça.
 </p>
 <p>
