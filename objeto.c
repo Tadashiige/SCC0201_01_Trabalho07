@@ -240,10 +240,11 @@ void changeType (OBJETO *obj, char type, funcPtr mov)
 void changePosition (OBJETO *obj, char *position, int fullTurn)
 {
 	if(obj != NULL && position != NULL &&
-			strlen(position) == 2 &&
+			strlen(position) > 1 &&
 			(position[0] >= 'a' && position[0] <= 'h' && position[1] >= '1' && position[1] <= '8') &&
 			fullTurn > 0)
 	{
+		//todo fazer verificação de peão para chamada de changeType na promoção
 		strcpy(obj->position, position);
 		free(position);
 		obj->fullTurn = fullTurn;

@@ -865,3 +865,64 @@ void printListMovKing (MOV_PARAM)
 	char ** list = movKing(MOV_VALUE);
 	printListMov(list, getNList(obj));
 }
+
+//********************************** trabalho 07
+OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pieces, int pieces_num)
+{
+	if(table != NULL)
+	{
+		int row = 7 - getObjectRow(play.obj);
+		int col = getObjectColumn(play.obj);
+
+		if(table[row][col] != NULL)
+			captured(table[row][col]);
+
+		table[row][col] = play.obj;
+
+		//nova ordenação só é necessária quando há promoção de peão, caso contrário a ordem é mantida
+		char turn = (getType(play.obj) == 'P') ? 'w' : 'b';
+		if(play.promotion != '-')
+		{
+			//ordenar por critério de desempate e apenas as peças do turno
+			if(turn == 'w')
+				qsort(collection, white_pieces, sizeof(OBJETO*), &desempate);
+			else
+				qsort(collection + white_pieces, pieces_num - white_pieces, sizeof(OBJETO*), &desempate);
+		}
+	}
+	return collection;
+}
+
+OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces_num, int turn)
+{
+	if(collection != NULL && pieces_num != NULL && white_pieces != NULL)
+	{
+		int i;
+		int newSize = *pieces_num;
+		for(i = 0; i < *pieces_num; i++)
+		{
+			//manter armazenado as peças ainda ativas
+			if(!getActive(collection[i]))
+			{
+				//peças desativadas
+				int j;
+				//deletar a peça desativada
+				deleteObject(&(collection[i]));
+
+				//puxar a lista para diminuir em uma posição, a que foi deletada
+				for(j = i; j < *pieces_num - 1; j++)
+					collection[i] = collection[i + 1];
+
+				collection = (OBJETO**)realloc(collection, sizeof(OBJETO*)*(--newSize));
+				//para cada update só pode haver uma captura, uma vez identificada não precisa percorrer o resto
+				break;
+			}
+
+		}
+
+		//armazenar os novos dados
+		*white_pieces -= ((*pieces_num - newSize) * !turn); //se o turno é do Preto, então a peça capturada é a Branca
+		*pieces_num = newSize;
+	}
+	return collection;
+}

@@ -42,4 +42,9 @@ void printTable (OBJETO *** const table);
 //função irá avaliar se há risco no movimento da peça contra o rei
 int riscoRei (OBJETO *** const table, OBJETO * const obj, int row, int col, int turn);
 
+//*********************** trabalho 07
+PLAY inputPlay (OBJETO *** const table, int turn);
+//funçao verifica fim de jogo
+int verifyGameState (OBJETO **const collection, const int pieces_num, FEN *fen);
+
 #endif

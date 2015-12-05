@@ -5,7 +5,7 @@ all_test: objeto.o peca.o regra.o FEN.o xadrez.o
 	gcc -o chess_test objeto.o peca.o regra.o FEN.o xadrez.o -g -pg -lm
 
 xadrez.o: xadrez.c
-	gcc -c xadrez.c -g -pg -w
+	gcc -c xadrez.c -g -pg
 
 objeto.o: objeto.c
 	gcc -c objeto.c -g -pg

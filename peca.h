@@ -36,4 +36,7 @@ void printListMovRook (MOV_PARAM);
 void printListMovQueen (MOV_PARAM);
 void printListMovKing (MOV_PARAM);
 
+//*********************** trabalho 07
+OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces_num, int turn);
+
 #endif

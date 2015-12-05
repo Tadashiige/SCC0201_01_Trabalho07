@@ -47,7 +47,7 @@ FEN* createFEN (char* string);
 void deleteFEN (FEN** fen);
 
 //função irá atualizar a situação atual do tabuleiro e suas condições
-FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY *play);
+FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY play);
 
 //função irá imprimir a notação FEN
 void printFEN (FEN *fen);

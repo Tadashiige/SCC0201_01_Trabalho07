@@ -554,10 +554,8 @@ void changeTurn (FEN *fen)
 }
 
 //função irá atualizar a situação atual do tabuleiro e suas condições
-FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY * play)
+FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY play)
 {
-	changeTurn (fen);
-
 	// ************************************************* atualizar a configuração do tabuleiro no fen
 	char *update = (char*)malloc(sizeof(char));
 	*update = '\0';
@@ -661,10 +659,10 @@ FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY * play)
 	for(i = 0; i < TABLE_COLS; i++)
 	{
 		//se o turno é do White então os peões estão na linha 5 da matriz, senão, na linha 2 da matriz.
-		if(table[adj * turn + 2 - 4*turn][i] == play->obj && getType(play->obj) == 'p' - turn * 32)
+		if(table[adj * turn + 2 - 4*turn][i] == play.obj && getType(play.obj) == 'p' - turn * 32)
 		{
 			//função update será chamada antes de atualizar a coordenada da struct da peça
-			int diff = abs(play->fromRow - getObjectRow(play->obj));
+			int diff = abs(play.fromRow - getObjectRow(play.obj));
 
 			//se houve salto de 2 casas do peão
 			if(diff == 2)
@@ -681,16 +679,13 @@ FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY * play)
 
 	// ********************************** verificar o acréscimo do meio turno
 		//se movimento foi feito de peão ou foi feito uma captura
-	if(getType(play->obj) == 'p' - turn * 32 || fen->fullTurn == getObjectTurn (play->obj))
+	if(getType(play.obj) == 'p' - turn * 32 || fen->fullTurn == getObjectTurn (play.obj))
 		fen->halfTurn ++;
 
 	// ********************************** verificar o acréscimo do turno completo
 		//se a jogada foi feita pela lado Preto
 	if(turn)
 		fen->fullTurn++;
-
-	//voltar para o turno atual
-	turn = !turn;
 
 	//guardar a nova notação do estado atual do tabuleiro
 	strcpy(fen->pieces, update);

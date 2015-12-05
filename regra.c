@@ -536,3 +536,97 @@ int riscoRei (OBJETO *** const table, OBJETO * const obj, int row, int col, int 
 	//if(result) printf("rei em perigo_[%d][%d]\n", row, col);
 	//return result;
 }
+
+// ************************************************** Trabalho 07
+PLAY inputPlay (OBJETO *** const table, int turn)
+{
+	int validate = 1;
+
+	PLAY play;
+	play.obj = NULL;
+	play.promotion = '-';
+	play.fromRow = 8;
+	play.fromCol = 8;
+	if(table != NULL)
+	{
+		//receber jogada do usuário até que ela seja válida
+		while(validate)
+		{
+			int row, col;
+			char cmd[6];
+			fscanf(stdin, "%s\n", cmd);
+			col = (int)('a' - cmd[0]);
+			row = (int)7 - ('1' - cmd[1]);
+
+			//coordenadas válidas e peça válida para o turno
+			if(col >= 0 && col < TABLE_COLS && row >= 0 && row < TABLE_ROWS &&
+					table[row][col] != NULL &&
+					(getType(table[row][col]) - 'a' >= 0) == !turn)
+			{
+				int i;
+				char **list = getList (table[row][col]);
+				int nList = getNList (table[row][col]);
+
+				int adj = (getType(table[row][col]) == 'p' - turn * 32);
+
+				//buscar jogada listada nas possibilidades
+				for(i = 0; i < nList; i++)
+				{
+					//ajuste para comparação, caso haja promoção na notação ela não termina em número, nem é en passant.
+					int adjList = adj && (list[i][strlen(list[i]) - 1] >= 'B' && list[i][strlen(list[i]) - 1] <= 'R');
+
+					//existe jogada na lista da peça dada pela coordenada do destino
+					if(!strncmp(list[i] + (strlen(list[i]) - 1 - 1) - adj, &cmd[2], 2))
+					{
+						play.obj = table[row][col];
+						play.fromRow = row;
+						play.fromCol = col;
+						if(adj)
+							play.promotion = list[i][strlen(list[i]) - 1];
+
+						validate = 0;
+
+						//se encontrou a jogada não precisa percorrer o resto da lista
+						break;
+					}
+				}//for
+			}
+			if(validate)
+				fprintf(stdout, "Movimento invalido. Tente novamente.\n");
+		}//while validate
+	}//if table != NULL
+	return play;
+}
+
+int verifyGameState (OBJETO **const collection, const int pieces_num, FEN *fen)
+{
+	return  1 * chequeMate(collection, pieces_num, fen->turn) +
+			2 * regraAfogamento (collection, pieces_num, fen->turn) +
+			4 * regra50movimento (fen) +
+			8 * regraMaterial (collection, pieces_num);
+}
+
+//função para verificar vitória
+//retorna 1
+int chequeMate (OBJETO ** const collection, const int pieces_num, int turn)
+{
+	return 0;
+}
+
+//funções para verificar empate
+//retorna 1
+int regraAfogamento (OBJETO **const collection, const int pieces_num, int turn)
+{
+	return 0;
+}
+//retorna 1
+int regra50movimento (FEN *fen)
+{
+	return 0;
+}
+//retorna 1
+int regraMaterial (OBJETO ** const collection, const int pieces_num)
+{
+	return 0;
+}
+

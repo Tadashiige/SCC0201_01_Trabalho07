@@ -50,6 +50,7 @@ typedef struct{
 	OBJETO *obj;
 	int fromRow;
 	int fromCol;
+	char promotion;
 }PLAY;
 
 //PARAMETRO FUNÇÕES MOV
