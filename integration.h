@@ -45,6 +45,13 @@ typedef struct CONFLICT {
 	int order;
 }CONFLICT;
 
+//estrutura para armazenar comando de uma jogada
+typedef struct{
+	OBJETO *obj;
+	int fromRow;
+	int fromCol;
+}PLAY;
+
 //PARAMETRO FUNÇÕES MOV
 #define MOV_PARAM OBJETO *** const table, OBJETO * const obj, FEN* fen, char white, char black
 #define MOV_VALUE table, obj, fen, white, black

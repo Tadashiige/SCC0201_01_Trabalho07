@@ -1,11 +1,13 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ *
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -36,5 +38,18 @@ char* collision (OBJETO *** const table, char *notation, OBJETO *const obj, int 
 
 //função irá adicionar notação para colisão de peças após todas as análises de peças
 void conflict (OBJETO **const collection, int size);
+
+//****************** trabalho 7
+//função irá criar a estrutura que comporta os dados da notação FEN
+FEN* createFEN (char* string);
+
+//função irá eliminar a estrutura fen da memória
+void deleteFEN (FEN** fen);
+
+//função irá atualizar a situação atual do tabuleiro e suas condições
+FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY *play);
+
+//função irá imprimir a notação FEN
+void printFEN (FEN *fen);
 
 #endif

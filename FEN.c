@@ -1,11 +1,13 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ *
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -483,3 +485,231 @@ void conflict (OBJETO **const collection, int size)
 	}
 }
 
+//******************************** Trabalho 7
+
+//função irá criar a estrutura que comporta os dados da notação FEN
+FEN* createFEN (char* string)
+{
+	FEN* fen = (FEN*) malloc(sizeof(FEN));
+	char* token;
+	token = strtok (string, " ");
+	int i;
+	char *paux;
+	char **vaux = (char**) malloc(sizeof(char));
+	//analisar as strings separadas por espaços
+	/*
+	 * São dados pela notação:
+	 * 1 - peças no tabuleiro
+	 * 2 - turno da rodada
+	 * 3 - disponibilidade de roque
+	 * 4 - disponibilidade de en passant
+	 * 5 - quantidade de meio turnos
+	 * 6 - quantidade de turno completo
+	 */
+	for(i = 0; token != NULL; i++)
+	{
+		paux = (char*)malloc(sizeof(char)*(strlen(token)+1));
+		strcpy(paux, token);
+
+		vaux = (char**)realloc(sizeof(char*)*(i+1));
+		vaux[i] = paux;
+
+		token (NULL, " ");
+	}
+
+	strcpy(fen->pieces, vaux[0]);
+	fen->turn = *(vaux[1]);
+	strcpy(fen->rock, vaux[2]);
+	strcpy(fen->pass, vaux[3]);
+	fen->halfTurn = atoi(vaux[4]);
+	fen->fullTurn = atoi(vaux[5]);
+
+	for(i--; i >= 0; i--)
+		free(vaux[i]);
+	free(vaux);
+
+	return fen;
+}
+
+//função irá eliminar a estrutura fen da memória
+void deleteFEN (FEN** fen)
+{
+	if(fen != NULL && (*fen) != NULL)
+	{
+		free(*fen);
+		*fen = NULL;
+	}
+}
+
+//função intercala o turno para próxima jogada
+void changeTurn (FEN *fen)
+{
+	if(fen != NULL)
+	{
+		if(fen->turn == 'w')
+			fen->turn = 'b';
+		else
+			fen->turn = 'w';
+	}
+}
+
+//função irá atualizar a situação atual do tabuleiro e suas condições
+FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY * play)
+{
+	changeTurn (fen);
+
+	// ************************************************* atualizar a configuração do tabuleiro no fen
+	char *update = (char*)malloc(sizeof(char));
+	*update = '\0';
+	int i, j;
+	int spaces;
+	int size;
+	for(i = 0; i < TABLE_ROWS; i++)
+	{
+		spaces = 0;
+		for(j = 0; j < TABLE_COLS; j++)
+		{
+			//contagem de espaços vazios
+			if(table[i][j] == NULL)
+				spaces ++;
+			//acréscimo de espaços e de peças na notação
+			else
+			{
+				size = strlen(update);
+				//se houve espaços entre peças na horizontal acrescental o salto na notação
+				if(spaces)
+				{
+					update = (char*)realloc(update, sizeof(char)*(++size + 1));
+					update[size - 1] = '0' + size;
+				}
+				//acréscimo das peças na notação
+				update = (char*)realloc(update, sizeof(char)*(++size + 1));
+				update[size - 1] = getType(table[i][j]);
+			}
+		}
+		if(spaces)
+		{
+			size = strlen(update);
+			update = (char*)realloc(update, sizeof(char)*(++size + 1));
+			update[size - 1] = '0' + size;
+		}
+		//adicionar uma barra para cada linha do tabuleiro
+		size = strlen(update);
+		update = (char*)realloc(update, sizeof(char)*(++size + 1));
+		update[size - 1] = '/';
+	}
+
+	//eliminar a ultima '/' da string
+	size = strlen(update);
+	update = (char*)realloc(update, sizeof(char)*(--size + 1));
+	update[size] = '\0';
+
+	int turn = (fen->turn == 'w') ? 1: 0;
+
+	// ********************************* verificar condições de roque futuro
+	char *newRock = (char*)malloc(sizeof(char));
+	strcpy(newRock, "");
+	int adj = 7;
+
+	//analisar a jogada anterior
+	turn = !turn;
+
+	strcpy(fen->rock, "-");
+	if(getType(table[adj * turn][4]) == 'k' - (32 * turn))
+	{
+		int rockSize = strlen(fen->rock);
+		int newSize = 0;
+		char *paux = fen->rock;
+		int i;
+		for(i = 0; i < rockSize; i++)
+		{
+			switch(paux[i])
+			{
+			case 'q' - !turn * 32:
+				newSize = strlen(newRock);
+				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
+				newRock[newSize - 1] = 'q' - !turn * 32;
+				break;
+			//verificar se a torre para lado da rainha não foi movida
+			case 'q' - turn * 32:
+				if(getType(table[adj * turn][0] == 'q' - turn * 32))
+				{
+					newSize = strlen(newRock);
+					newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
+					newRock[newSize - 1] = 'q' - turn * 32;
+				}
+				break;
+			case 'k' - !turn * 32:
+				newSize = strlen(newRock);
+				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
+				newRock[newSize - 1] = 'k' - !turn * 32;
+				break;
+			//verificar se a torre para o lado do rei não foi movida
+			case 'k' - turn * 32:
+				if(getType(table[adj * turn][0] == 'k' - turn * 32))
+				{
+					newSize = strlen(newRock);
+					newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
+					newRock[newSize - 1] = 'k' - turn * 32;
+				}
+				break;
+			default:
+				break;
+			}
+		}//for
+		if(newSize)
+			strcpy(fen->rock, newRock); //->rock contem por padrão "", a ser modificada pelo switch
+	}
+
+	// ********************************* verificar descartar formação de en passant anterior e verificar a atual
+	strcpy(fen->pass, "-");
+	for(i = 0; i < TABLE_COLS; i++)
+	{
+		//se o turno é do White então os peões estão na linha 5 da matriz, senão, na linha 2 da matriz.
+		if(table[adj * turn + 2 - 4*turn][i] == play->obj && getType(play->obj) == 'p' - turn * 32)
+		{
+			//função update será chamada antes de atualizar a coordenada da struct da peça
+			int diff = abs(play->fromRow - getObjectRow(play->obj));
+
+			//se houve salto de 2 casas do peão
+			if(diff == 2)
+			{
+				char newPass[3];
+				newPass[0] = 'a' + i;
+				newPass[1] = '1' + 7*!turn - 1 + 2*turn;
+				newPass[2] = '/';
+				strcpy(fen->pass, newPass);
+			}
+			break;
+		}
+	}
+
+	// ********************************** verificar o acréscimo do meio turno
+		//se movimento foi feito de peão ou foi feito uma captura
+	if(getType(play->obj) == 'p' - turn * 32 || fen->fullTurn == getObjetTurn (play->obj))
+		fen->halfTurn ++;
+
+	// ********************************** verificar o acréscimo do turno completo
+		//se a jogada foi feita pela lado Preto
+	if(turn)
+		fen->fullTurn++;
+
+	//voltar para o turno atual
+	turn = !turn;
+
+	//guardar a nova notação do estado atual do tabuleiro
+	strcpy(fen->pieces, update);
+
+	return fen;
+}
+
+//função irá imprimir a notação FEN
+void printFEN (FEN *fen)
+{
+	fprintf(stdout, "%s ", fen->pieces);
+	fprintf(stdout, "%c ", fen->turn);
+	fprintf(stdout, "%s ", fen->rock);
+	fprintf(stdout, "%s ", fen->pass);
+	fprintf(stdout, "%d ", fen->halfTurn);
+	fprintf(stdout, "%d\n", fen->fullTurn);
+}

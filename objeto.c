@@ -28,6 +28,7 @@ struct objeto {
 	int active;
 	char **list;
 	int nList;
+	int fullTurn;
 };
 
 /**
@@ -51,7 +52,7 @@ struct objeto {
 OBJETO* createObject (char type, char *position,  funcPtr mov)
 {
 	int aux = type;
-	if(type > 96)
+	if(type > 'a')
 		aux -= 32;
 	OBJETO *new = NULL;
 	//o tipo da peça tem que ser conhecida do xadrez e as dimenções dentro do padrão
@@ -71,6 +72,7 @@ OBJETO* createObject (char type, char *position,  funcPtr mov)
 			new->active = 1;
 			new->list = (char**)malloc(sizeof(char*));
 			new->nList = 0;
+			new->fullTurn = 0; //começar do zero para não satisfazer a igualdade na comparação com meio turno
 		}
 	}
 	return new;
@@ -226,14 +228,16 @@ void changeType (OBJETO *obj, char type, funcPtr mov)
  *	RETORNO:
  *		VOID
  */
-void changePosition (OBJETO *obj, char *position)
+void changePosition (OBJETO *obj, char *position, int fullTurn)
 {
 	if(obj != NULL && position != NULL &&
-			strlen(position) == 3 &&
-			(position[0] >= 'a' && position[1] <= 'h' && position[1] >= '1' && position[1] <= '8'))
+			strlen(position) == 2 &&
+			(position[0] >= 'a' && position[0] <= 'h' && position[1] >= '1' && position[1] <= '8') &&
+			fullTurn > 0)
 	{
 		strcpy(obj->position, position);
 		free(position);
+		obj->fullTurn = fullTurn;
 	}
 }
 
