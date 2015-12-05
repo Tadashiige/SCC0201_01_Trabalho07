@@ -20,6 +20,8 @@
 #include "peca.h"
 #include "regra.h"
 
+//todo fazer interface para chamada de função updateFEN e interface de interação com o usuário
+
 int main (int argc, char* argv[])
 {
 	//declaração de variáveis da notação FEN

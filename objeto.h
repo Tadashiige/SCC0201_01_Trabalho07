@@ -30,7 +30,7 @@ void deleteObject (OBJETO **obj);
 void changeType (OBJETO *obj, char type, funcPtr mov);
 
 //função irá mudar a posição da peça
-void changePosition (OBJETO *obj, char *position);
+void changePosition (OBJETO *obj, char *position, int fullTurn);
 
 //função irá marcar a peça como capturada
 void captured (OBJETO *obj);
@@ -41,6 +41,7 @@ int getValue (OBJETO *obj);
 char* getPosition (OBJETO *obj);
 funcPtr getFunctionMov(OBJETO *obj);
 int getActive (OBJETO *obj);
+int getObjectTurn (OBJETO *obj);
 
 char** getList (OBJETO *obj);
 void setList (OBJETO *obj, char** list);

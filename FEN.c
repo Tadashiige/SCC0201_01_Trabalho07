@@ -511,10 +511,10 @@ FEN* createFEN (char* string)
 		paux = (char*)malloc(sizeof(char)*(strlen(token)+1));
 		strcpy(paux, token);
 
-		vaux = (char**)realloc(sizeof(char*)*(i+1));
+		vaux = (char**)realloc(vaux, sizeof(char*)*(i+1));
 		vaux[i] = paux;
 
-		token (NULL, " ");
+		token = strtok(NULL, " ");
 	}
 
 	strcpy(fen->pieces, vaux[0]);
@@ -623,39 +623,34 @@ FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY * play)
 		int i;
 		for(i = 0; i < rockSize; i++)
 		{
-			switch(paux[i])
+			if(paux[i] == 'q' - !turn * 32)
 			{
-			case 'q' - !turn * 32:
 				newSize = strlen(newRock);
 				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
 				newRock[newSize - 1] = 'q' - !turn * 32;
-				break;
+			}
 			//verificar se a torre para lado da rainha não foi movida
-			case 'q' - turn * 32:
-				if(getType(table[adj * turn][0] == 'q' - turn * 32))
-				{
-					newSize = strlen(newRock);
-					newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
-					newRock[newSize - 1] = 'q' - turn * 32;
-				}
-				break;
-			case 'k' - !turn * 32:
+			else if(paux[i] == 'q' - turn * 32 && getType(table[adj * turn][0]) == 'q' - turn * 32)
+			{
+				newSize = strlen(newRock);
+				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
+				newRock[newSize - 1] = 'q' - turn * 32;
+			}
+
+			else if(paux[i] == 'k' - !turn * 32)
+			{
 				newSize = strlen(newRock);
 				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
 				newRock[newSize - 1] = 'k' - !turn * 32;
-				break;
-			//verificar se a torre para o lado do rei não foi movida
-			case 'k' - turn * 32:
-				if(getType(table[adj * turn][0] == 'k' - turn * 32))
-				{
-					newSize = strlen(newRock);
-					newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
-					newRock[newSize - 1] = 'k' - turn * 32;
-				}
-				break;
-			default:
-				break;
 			}
+			//verificar se a torre para o lado do rei não foi movida
+			else if(paux[i] == 'k' - turn * 32 && getType(table[adj * turn][0]) == 'k' - turn * 32)
+			{
+				newSize = strlen(newRock);
+				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
+				newRock[newSize - 1] = 'k' - turn * 32;
+			}
+
 		}//for
 		if(newSize)
 			strcpy(fen->rock, newRock); //->rock contem por padrão "", a ser modificada pelo switch
@@ -686,7 +681,7 @@ FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY * play)
 
 	// ********************************** verificar o acréscimo do meio turno
 		//se movimento foi feito de peão ou foi feito uma captura
-	if(getType(play->obj) == 'p' - turn * 32 || fen->fullTurn == getObjetTurn (play->obj))
+	if(getType(play->obj) == 'p' - turn * 32 || fen->fullTurn == getObjectTurn (play->obj))
 		fen->halfTurn ++;
 
 	// ********************************** verificar o acréscimo do turno completo

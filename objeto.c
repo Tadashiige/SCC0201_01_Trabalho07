@@ -182,6 +182,15 @@ int getNList (OBJETO *obj)
 	return 0;
 }
 
+int getObjectTurn (OBJETO *obj)
+{
+	if(obj != NULL)
+	{
+		return obj->fullTurn;
+	}
+	return 0;
+}
+
 /**
  *	Função irá mudar o tipo e a função movimentação da peça
  *
