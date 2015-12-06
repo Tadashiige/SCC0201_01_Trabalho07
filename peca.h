@@ -1,11 +1,12 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -37,7 +38,11 @@ void printListMovQueen (MOV_PARAM);
 void printListMovKing (MOV_PARAM);
 
 //*********************** trabalho 07
+
+//Função irá atualizar a coleção de peças segundo a jogada anterior
 OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces_num, int turn);
+
+//efetivar a jogada na matriz de tabuleiros, modificando outras peças quando necessário, e desativando peças capturadas
 OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pieces, int pieces_num, int fullTurn);
 
 #endif

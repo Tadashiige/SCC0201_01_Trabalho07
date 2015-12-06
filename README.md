@@ -10,7 +10,7 @@ _UBUNTU 14.04 LTS - 64BITS_
 _ECLIPSE - MARS_
 
 _LINGUAGEM C (MAKEFILE)_
-<p style="width:100%;height:auto">
+<div style="width:100%;height:auto">
 	<img src="BN-GJ136_chess_J_20150109120327.jpg" alt="chess Image" style="width:50%;height:auto;">
 
 <p>

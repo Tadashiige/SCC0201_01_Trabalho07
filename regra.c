@@ -1,11 +1,13 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ *
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -538,6 +540,24 @@ int riscoRei (OBJETO *** const table, OBJETO * const obj, int row, int col, int 
 }
 
 // ************************************************** Trabalho 07
+
+/**
+ * Função irá validar a jogada do input e armazená-la na estrutura PLAY
+ * DESCRIÇÃO:
+ * 		Função irá extrair da string as coordenadas da peça alvo e verificar se ela existe. Assim extraindo-se
+ * 		a coordenada da casa alvo, verificar se ela compreende na lista de jogadas possíveis para a peça. Caso ambos
+ * 		as situações deem errado uma mensagem de erro e nova input é possível. Assim que receber uma jogada
+ * 		válida, então a posição da peça é atualizada e os dados de PLAY são armazenadas.
+ *
+ * 	PARAMETROS:
+ * 		OBJETO *** const table - tabuleiro de objetos
+ * 		int turn - valor representativo do turno da rodada (1 - BRANCO, 0 - PRETO)
+ * 		int fullTurn - número de turno completo da partida
+ * 		FEN const *fen - ponteiro para estrutura da notação FEN
+ *
+ * 	RETORNO:
+ * 		PLAY play - estrutura que contem o objeto da jogada, e as coordenadas de origem da peça, assim como a possível promoçaõ
+ */
 PLAY inputPlay (FEN const* fen, OBJETO *** const table, int turn, int fullTurn)
 {
 	int validate = 1;
@@ -556,13 +576,11 @@ PLAY inputPlay (FEN const* fen, OBJETO *** const table, int turn, int fullTurn)
 			fscanf(stdin, "%s", cmd);
 			col = (int)(cmd[0] - 'a');
 			row = (int)('8' - cmd[1]);
-//printf("input %s:[%d][%d]\n", cmd,  row, col);
 			//coordenadas válidas e peça válida para o turno
 			if(col >= 0 && col < TABLE_COLS && row >= 0 && row < TABLE_ROWS &&
 					table[row][col] != NULL &&
 					(getType(table[row][col]) - 'a' >= 0) == !turn)
 			{
-//printf("piece found: %c\n", getType(table[row][col]));
 				int i;
 				char **list = getList (table[row][col]);
 				int nList = getNList (table[row][col]);
@@ -574,7 +592,6 @@ PLAY inputPlay (FEN const* fen, OBJETO *** const table, int turn, int fullTurn)
 				{
 					//ajuste para comparação, caso haja promoção na notação ela não termina em número, nem é en passant.
 					int adjList = adj && (list[i][strlen(list[i]) - 1] >= 'B' && list[i][strlen(list[i]) - 1] <= 'R');
-//printf("compare: %.2s <> %.2s\n", list[i] + (strlen(list[i]) - 1 - 1) - adjList, &(cmd[2]));
 					//existe jogada na lista da peça dada pela coordenada do destino
 					if(!strncmp(list[i] + (strlen(list[i]) - 1 - 1) - adjList, &(cmd[2]), 2))
 					{
@@ -603,16 +620,47 @@ PLAY inputPlay (FEN const* fen, OBJETO *** const table, int turn, int fullTurn)
 	return play;
 }
 
-int verifyGameState (OBJETO *** const table, OBJETO **const collection, const int pieces_num, FEN *fen)
+/**
+ * Função verifica as condições para fim de jogo
+ * DESCRIÇÃO:
+ * 		Função irá chamar as funções verificadoras de fim de jogo para avaliar as condições atuais.
+ * 		São chamadas as função para cheque-mate, afogamento, 50 movimentos e falta de material.
+ *
+ * 	PARAMETROS:
+ * 		OBJETO *** const table - tabuleiro de objetos
+ * 		OBJETO ** const fullCollection - vetor com todas as peças do jogo
+ * 		OBJETO ** const collection - vetor com peças do turno
+ * 		const int pieces_num - tamanho do vetor de peças do turno
+ * 		const int fullSize - tamanho do vetor com todas as peças do jogo
+ * 		FEN *fen - ponteiro para estrutura da notação FEN
+ *
+ * 	RETORNO:
+ * 		int RESULTADO - resultado das verificações, para cada tipo de fim de jogo será multiplo da base 2 (1, 2, 4, 8)
+ */
+int verifyGameState (OBJETO *** const table, OBJETO **const fullCollection, OBJETO **const collection,
+		const int pieces_num, const int fullSize, FEN *fen)
 {
 	return  1 * chequeMate(table, collection, pieces_num, (fen->turn == 'w')?1:0) +
 			2 * regraAfogamento (table, collection, pieces_num, (fen->turn == 'w')?1:0) +
 			4 * regra50movimento (fen) +
-			8 * regraMaterial (collection, pieces_num) +
-			16 * forceEnd(fen);
+			8 * regraMaterial (fullCollection, fullSize);
 }
 
-//função para verificar vitória
+/**
+ * Função verifica cheque-mate
+ * DESCRIÇÃO:
+ * 		Função irá fazer somatórias com todas jogadas possíveis para o turno, caso seja Zero e o rei estaja em cheque,
+ * 		então isso configura cheque-mate.
+ *
+ * 	PARAMETROS:
+ * 		OBJETO *** const table - tabuleiro de objetos
+ * 		OBJETO ** const collection - vetor com peças do turno
+ * 		const int pieces_num - tamanho do vetor de peças do turno
+ * 		int turn - valor representativo de turno (1 - BRANCO, 0 - PRETO)
+ *
+ * 	RETORNO:
+ * 		int RESULTADO - retorna 1 caso não haja jogadas possíveis com rei em cheque
+ */
 //retorna 1
 int chequeMate (OBJETO *** const table, OBJETO ** const collection, const int pieces_num, int turn)
 {
@@ -622,6 +670,7 @@ int chequeMate (OBJETO *** const table, OBJETO ** const collection, const int pi
 		int result = 0;
 		for(i = 0; i < pieces_num; i++)
 		{
+			//buscar número de jogadas para cada peça
 			if(getNList(collection[i]))
 				result++;
 		}
@@ -633,7 +682,21 @@ int chequeMate (OBJETO *** const table, OBJETO ** const collection, const int pi
 	return 0;
 }
 
-//funções para verificar empate
+/**
+ * Função verifica empate por afogamento
+ * DESCRIÇÃO:
+ * 		Função irá fazer somatórias com todas jogadas possíveis para o turno, caso seja Zero e o rei NÃO estaja em cheque,
+ * 		então isso configura cheque-mate.
+ *
+ * 	PARAMETROS:
+ * 		OBJETO *** const table - tabuleiro de objetos
+ * 		OBJETO ** const collection - vetor com peças do turno
+ * 		const int pieces_num - tamanho do vetor de peças do turno
+ * 		int turn - valor representativo de turno (1 - BRANCO, 0 - PRETO)
+ *
+ * 	RETORNO:
+ * 		int RESULTADO - retorna 1 caso não haja jogadas possíveis com rei a salvo
+ */
 //retorna 1
 int regraAfogamento (OBJETO *** const table, OBJETO **const collection, const int pieces_num, int turn)
 {
@@ -643,6 +706,7 @@ int regraAfogamento (OBJETO *** const table, OBJETO **const collection, const in
 		int result = 0;
 		for(i = 0; i < pieces_num; i++)
 		{
+			//buscar número de jogadas totais possíveis
 			if(getNList(collection[i]))
 				result++;
 		}
@@ -654,6 +718,17 @@ int regraAfogamento (OBJETO *** const table, OBJETO **const collection, const in
 	return 0;
 }
 
+/**
+ * Função verifica condição de empate por regra dos 50 movimentos
+ * DESCRIÇÃO:
+ * 		Função verifica se o número de meio turnos passa de 50.
+ *
+ * 	PARAMETROS:
+ * 		FEN *fen - ponteiro para estrutura da notação FEN
+ *
+ * 	RETORNO:
+ * 		int RESULTADO - retorna 1 caso haja mais de 50 movimentos de meio turno
+ */
 //retorna 1
 int regra50movimento (FEN *fen)
 {
@@ -661,6 +736,22 @@ int regra50movimento (FEN *fen)
 		return 1;
 	return 0;
 }
+
+/**
+ * Função verifica empate por falta de material
+ * DESCRIÇÃO:
+ * 		Falta de material se configura por Rei x Rei & Cavalo ou Rei x Rei & Bispo. Como cavalo e bispo tem
+ * 		mesmos valores de pontos (325) e o rei possui valor muito alto (50000), então não há possibilidade
+ * 		de arranjo de passas cuja soma seja igual a configuração acima citada, portanto funçao verifica
+ * 		se a soma total das peças no jogo é igual a definição deste empate.
+ *
+ * 	PARAMETROS:
+ * 		OBJETO ** const collection - vetor com peças do tabuleiro
+ * 		const int pieces_num - tamanho do vetor de peças do tabuleiro
+ *
+ * 	RETORNO:
+ * 		int RESULTADO - retorna 1 caso o valor da soma seja igual a 100.325
+ */
 //retorna 1
 int regraMaterial (OBJETO ** const collection, const int pieces_num)
 {
@@ -677,9 +768,4 @@ int regraMaterial (OBJETO ** const collection, const int pieces_num)
 			return 1;
 	}
 	return 0;
-}
-
-int forceEnd (FEN *fen)
-{
-	return fen->turn == 'e';
 }

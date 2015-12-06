@@ -1,11 +1,13 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ *
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -53,7 +55,10 @@ void setNList (OBJETO *obj, int size);
 void printObject (OBJETO *const obj);
 void printCollectionObject (OBJETO **const collectionObj, int size);
 
+//função buscar pelo rei do turno
 OBJETO *getKingTable (OBJETO *** const table, int turn);
+
+//função elimina toda lista da peça para recepção de uma nova
 char** clearList (OBJETO *obj);
 
 #endif

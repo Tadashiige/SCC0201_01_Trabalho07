@@ -1,11 +1,13 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ *
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -43,8 +45,10 @@ void printTable (OBJETO *** const table);
 int riscoRei (OBJETO *** const table, OBJETO * const obj, int row, int col, int turn);
 
 //*********************** trabalho 07
+//Função irá validar a jogada do input e armazená-la na estrutura PLAY
 PLAY inputPlay (FEN const *fen, OBJETO *** const table, int turn, int fullTurn);
+
 //funçao verifica fim de jogo
-int verifyGameState (OBJETO *** const table, OBJETO **const collection, const int pieces_num, FEN *fen);
+int verifyGameState (OBJETO *** const table, OBJETO **const fullCollection, OBJETO **const collection, const int pieces_num, const int fullSize, FEN *fen);
 
 #endif

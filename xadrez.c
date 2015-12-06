@@ -1,11 +1,13 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ *
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -19,9 +21,6 @@
 #include "objeto.h"
 #include "peca.h"
 #include "regra.h"
-
-//todo alguém está mechendo na lista de jogadas... exemplo: rainha que captura torre em a1 naõ tem a1 na lista
-//todo quando o preto joga efetivamente a lista fica estranha, aumenta em mais 1 todas as jogadas do peão
 
 int main (int argc, char* argv[])
 {
@@ -90,12 +89,13 @@ int main (int argc, char* argv[])
 		funcType(MOV_VALUE);
 	}
 
+	printFEN(fen);
+
 	// ****************************************** Interface de entrada de jogadas do usuário
 
 	int endGame;
-	while(!(endGame = verifyGameState(table, collection_list, total, fen)))
+	while(!(endGame = verifyGameState(table, collection, collection_list, total, pieces_num, fen)))
 	{
-//printf("receber jogada\n");
 
 		//receber jogada válida do usuário
 		PLAY play = inputPlay (fen, table, ((fen->turn == 'w')? 1 : 0), fen->fullTurn);
@@ -109,7 +109,7 @@ int main (int argc, char* argv[])
 		updateFEN(fen, table, play);
 		changeTurn(fen);
 
-printTable(table);
+		//tratar as peças a serem consideradas para o próximo jogador
 		printFEN(fen);
 
 		if(fen->turn == 'w')
@@ -125,7 +125,7 @@ printTable(table);
 
 		char **list;
 
-		//executar as listagem de movimentos para cada peça
+		//executar as listagem de movimentos de cada peça para próxima jogada
 		for(i = 0; i < total; i++)
 		{
 			funcPtr funcType;
@@ -147,7 +147,7 @@ printTable(table);
 
 	if(endGame % 2)
 	{
-		fprintf(stdout, "Cheque-mate -- Vitoria:  ");
+		fprintf(stdout, "Cheque-mate -- Vitoria: ");
 		//OBS.: o valor de turno esta invertido pq o teste se faz sempre que o turno é virado, então
 			//a vitória se dá para a jogada anterior a inversão
 		if(fen->turn == 'b')
@@ -157,16 +157,13 @@ printTable(table);
 	}
 	else
 	{
-		fprintf(stdout, "EMPATE -- ");
+		fprintf(stdout, "Empate -- ");
 		if(endGame % 4)
 		{
 			fprintf(stdout, "Afogamento");
 		}else if (endGame % 8)
 		{
 			fprintf(stdout, "Regra dos 50 Movimentos");
-		}else if(endGame % 16)
-		{
-			fprintf(stdout, "Encerramento forçado");
 		}else
 			fprintf(stdout, "Falta de Material");
 

@@ -1,11 +1,12 @@
 /**
  * Saulo Tadashi Iguei NºUsp 7573548
  *
- * DATA entrega limite: 08/11/15
+ * DATA entrega limite: 08/12/15
  *
  * SCC0201_01 - ICC2 _ Prof. Moacir
  *
  * Trabalho 6: Xadrez - Parte 1 (Geração de movimentos)
+ * >>>>> Trabalho 7: Xadrez -Parte 2 (Implementação de jogabilidade)
  */
 
 /*
@@ -861,6 +862,26 @@ void printListMovKing (MOV_PARAM)
 }
 
 //********************************** trabalho 07
+/**
+ * Função irá efetivar a jogada e aplicar as mudanças dela decorrente
+ *
+ * DESCRIÇÃO:
+ * 		Função irá receber uma jogada já validada, assim com as coordenadas da peça já atualizada,
+ * 		efetiva-se as mudanças no vetor de coleções, marcando a peça capturada como inativa e
+ * 		armazenando o turno da captura na peça da jogada, movendo a peça na matriz de tabuleiro,
+ * 		e fazendo a atualização para torres, em roques, e aplicando a promoção para peões quando
+ * 		configurados para tal. Caso haja promoção a coleção é ordenada.
+ *
+ * 	PARAMETROS:
+ * 		OBJETO *** table - ponteiro para matriz de tabuleiro
+ * 		OBJEOT ** collection - vetor de peças do jogo
+ * 		int white_pieces - numero de peças brancas
+ * 		int pieces_num - número total de peças
+ * 		int fullTurn - número do turno completo
+ *
+ * 	RETORNO:
+ * 		OBJETO ** collection - vetor de peças do jogo (obs.: ela não é necessária no retorno, a ordenação não perde o endereço)
+ */
 OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pieces, int pieces_num, int fullTurn)
 {
 	if(table != NULL)
@@ -868,12 +889,14 @@ OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pi
 		int row = 7 - getObjectRow(play.obj);
 		int col = getObjectColumn(play.obj);
 
+		//jogada é uma captura
 		if(table[row][col] != NULL)
 		{
 			captured(table[row][col]);
 			setObjectTurn(play.obj, fullTurn);
 		}
 
+		//mover no tabuleiro
 		table[row][col] = play.obj;
 		table[play.fromRow][play.fromCol] = NULL;
 
@@ -923,6 +946,22 @@ OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pi
 	return collection;
 }
 
+/**
+ * Função irá atualizar a coleção de peças segundo a jogada anterior
+ * DESCRIÇÃO:
+ * 		Função irá buscar por peças desativadas e eliminá-lo da memória. Assim remanejar
+ * 		as peças posteriores para a lacuna, realocando o vetor para o tamanho reduzido.
+ * 		Atualiza-se os valores de peças brancas e peças totais.
+ *
+ * PARAMETROS:
+ * 		OBJETO ** collection - coleção de peças
+ * 		int *white_pieces - endereço do número de peças brancas
+ * 		int *pieces_pieces - endereço do número total de peças
+ * 		int turn - valor representativo de turno (1- branco, 0- preto)
+ *
+ * RETORNO:
+ * 		OBJETO **collection - coleção de peças atualizadas
+ */
 OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces_num, int turn)
 {
 	if(collection != NULL && pieces_num != NULL && white_pieces != NULL)
@@ -934,7 +973,6 @@ OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces
 			//manter armazenado as peças ainda ativas
 			if(!getActive(collection[i]))
 			{
-//printf("peça capturada turn[%d] %c\n", turn, getType(collection[i]));
 				//peças desativadas
 				int j;
 				//deletar a peça desativada
@@ -952,13 +990,8 @@ OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces
 		}
 
 		//armazenar os novos dados
-//printf("peça branca: %d -> ", *white_pieces);
 		*white_pieces -= ((*pieces_num - newSize) * !turn); //se o turno é do Preto, então a peça capturada é a Branca
-//printf("%d\n", *white_pieces);
 		*pieces_num = newSize;
-//for(i = 0; i < *pieces_num; i++)
-//	printf("%c ", getType(collection[i]));
-//printf("\n");
 	}
 	return collection;
 }

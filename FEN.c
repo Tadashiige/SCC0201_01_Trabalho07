@@ -553,7 +553,26 @@ void changeTurn (FEN *fen)
 	}
 }
 
-//função irá atualizar a situação atual do tabuleiro e suas condições
+/**
+ * função irá atualizar a situação atual do tabuleiro e suas condições
+ * DESCRIÇÃO:
+ * 		Função irá percorrer a matriz de tabuleiro e irá iterativamente criando uma nova string
+ * 		com as configurações da atual matriz. Em seguida ele irá avaliar segundo a notação anterior
+ * 		de roque para criar uma nova string de roque para avaliar a situação atual de condição para
+ * 		roque, enserindo a condição apenas para o lado onde não houve alteração. Posteriormente é
+ * 		avaliado se houve um movimento de um peão na jogada atual se configura um en passant para
+ * 		o adiversário e armazena a nova situação na notação. Por fim são atualizadas os valores de
+ * 		meio turno, analizando os parametros da jogada atual (peão, ou captura) e incrementando o
+ * 		turno completo após jogada do lado PRETO.
+ *
+ * 	PARAMETROS:
+ * 		FEN *fen - ponteiro para estrutura da notação FEN
+ * 		OBJETO *** const table - ponteiro para matriz de tabuleiro
+ * 		PLAY play - estrutura que contem dados da jogada
+ *
+ * 	RETORNO:
+ * 		FEN * fen - ponteiro para estrutura da notação FEN atualizada
+ */
 FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY play)
 {
 	// ************************************************* atualizar a configuração do tabuleiro no fen
@@ -617,45 +636,57 @@ FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY play)
 	char *paux = fen->rock;
 
 	//analisar roque BRANCO
-	if(table[TABLE_ROWS - 1][4] != NULL && getType(table[TABLE_ROWS - 1][4]) == 'K' && paux[count] < 'a' && paux[count] != '-')
+	if(paux[count] == 'K')
 	{
-		if(getType(table[TABLE_ROWS - 1][TABLE_COLS - 1]) == 'R' && paux[count] == 'K')
+		if(getType(table[TABLE_ROWS - 1][TABLE_COLS - 1]) == 'R' &&
+				table[TABLE_ROWS - 1][4] != NULL && getType(table[TABLE_ROWS - 1][4]) == 'K')
 		{
 			sizeRock = strlen(newRock);
 			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
 			newRock[sizeRock - 1] = 'K';
 			newRock[sizeRock] = '\0';
-			count++;
 		}
-		if(getType(table[TABLE_ROWS - 1][0]) == 'R' && paux[count] == 'Q')
+		count++;
+	}
+	if(paux[count] == 'Q')
+	{
+		if(getType(table[TABLE_ROWS - 1][0]) == 'R' &&
+				table[TABLE_ROWS - 1][4] != NULL && getType(table[TABLE_ROWS - 1][4]) == 'K')
 		{
 			sizeRock = strlen(newRock);
 			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
 			newRock[sizeRock - 1] = 'Q';
 			newRock[sizeRock] = '\0';
-			count++;
 		}
+		count++;
 	}
+
 	//analisar roque PRETO
-	if(table[0][4] != NULL && getType(table[0][4]) == 'k' && paux[count] > 'a' && paux[count] != '-')
+	if(paux[count] == 'k')
 	{
-		if(getType(table[0][TABLE_COLS - 1]) == 'r' && paux[count] == 'k')
+		if(getType(table[0][TABLE_COLS - 1]) == 'r' &&
+				table[0][4] != NULL && getType(table[0][4]) == 'k')
 		{
 			sizeRock = strlen(newRock);
 			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
 			newRock[sizeRock - 1] = 'k';
 			newRock[sizeRock] = '\0';
-			count++;
 		}
-		if(getType(table[0][0]) == 'r' && paux[count] == 'q')
+		count++;
+	}
+	if(paux[count] == 'q')
+	{
+		if(getType(table[0][0]) == 'r' &&
+				table[0][4] != NULL && getType(table[0][4]) == 'k')
 		{
 			sizeRock = strlen(newRock);
 			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
 			newRock[sizeRock - 1] = 'q';
 			newRock[sizeRock] = '\0';
-			count++;
 		}
+		count++;
 	}
+
 	//atualizar as disponibilidades de rock
 	if((sizeRock = strlen(newRock)))
 		strcpy(fen->rock, newRock);
