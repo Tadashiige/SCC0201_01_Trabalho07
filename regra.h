@@ -43,8 +43,8 @@ void printTable (OBJETO *** const table);
 int riscoRei (OBJETO *** const table, OBJETO * const obj, int row, int col, int turn);
 
 //*********************** trabalho 07
-PLAY inputPlay (OBJETO *** const table, int turn);
+PLAY inputPlay (FEN const *fen, OBJETO *** const table, int turn, int fullTurn);
 //funçao verifica fim de jogo
-int verifyGameState (OBJETO **const collection, const int pieces_num, FEN *fen);
+int verifyGameState (OBJETO *** const table, OBJETO **const collection, const int pieces_num, FEN *fen);
 
 #endif

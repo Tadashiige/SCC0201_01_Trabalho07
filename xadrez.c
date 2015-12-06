@@ -20,7 +20,8 @@
 #include "peca.h"
 #include "regra.h"
 
-//todo fazer interface para chamada de função updateFEN e interface de interação com o usuário
+//todo alguém está mechendo na lista de jogadas... exemplo: rainha que captura torre em a1 naõ tem a1 na lista
+//todo quando o preto joga efetivamente a lista fica estranha, aumenta em mais 1 todas as jogadas do peão
 
 int main (int argc, char* argv[])
 {
@@ -73,21 +74,43 @@ int main (int argc, char* argv[])
 	}
 
 	//ordenar por critério de desempate e apenas as peças do turno
-	if(fen->turn == 'w')
-		qsort(collection, white_pieces, sizeof(OBJETO*), &desempate);
-	else
-		qsort(collection + white_pieces, pieces_num - white_pieces, sizeof(OBJETO*), &desempate);
+	qsort(collection, white_pieces, sizeof(OBJETO*), &desempate);
 
-	//todo para apagar
-	printCollectionObject (collection, pieces_num);
-	printTable(table);
+	qsort(collection + white_pieces, pieces_num - white_pieces, sizeof(OBJETO*), &desempate);
+
+	//executar as listagem de movimentos para cada peça criando a lista inicial
+	for(i = 0; i < pieces_num; i++)
+	{
+		funcPtr funcType;
+		funcType = getFunctionMov(collection[i]);
+		OBJETO *obj = collection[i];
+		char white = getType(obj) - (getType(obj) >= 'a')*32;
+		char black = getType(obj) + (getType(obj) < 'a')*32;
+
+		funcType(MOV_VALUE);
+	}
 
 	// ****************************************** Interface de entrada de jogadas do usuário
 
 	int endGame;
-	while(!(endGame = verifyGameState(collection, pieces_num, fen)))
+	while(!(endGame = verifyGameState(table, collection_list, total, fen)))
 	{
-		char **list;
+//printf("receber jogada\n");
+
+		//receber jogada válida do usuário
+		PLAY play = inputPlay (fen, table, ((fen->turn == 'w')? 1 : 0), fen->fullTurn);
+
+		//realizar mudanças das peças dadas pela jogada
+		//OBS.: Nova ordenação do vetor só é necessária quando há promoção de peão, implementado dentro desta função
+		doPlay (table, play, collection, white_pieces, pieces_num, fen->fullTurn);
+
+		//updateCollection elimina peça desativada, mas não tira as peças da orden, dispensando ordenação
+		updateCollection(collection, &white_pieces, &pieces_num, (fen->turn == 'w')? 1:0);
+		updateFEN(fen, table, play);
+		changeTurn(fen);
+
+printTable(table);
+		printFEN(fen);
 
 		if(fen->turn == 'w')
 		{
@@ -100,6 +123,8 @@ int main (int argc, char* argv[])
 			collection_list = collection + white_pieces;
 		}
 
+		char **list;
+
 		//executar as listagem de movimentos para cada peça
 		for(i = 0; i < total; i++)
 		{
@@ -108,27 +133,14 @@ int main (int argc, char* argv[])
 			OBJETO *obj = collection_list[i];
 			char white = getType(obj) - (getType(obj) >= 'a')*32;
 			char black = getType(obj) + (getType(obj) < 'a')*32;
-			//printf("peca %dº - %c[%d][%d]\n", i, getType(obj), getObjectRow(obj), getObjectColumn(obj));
+
+			clearList(obj);
+
 			list = funcType(MOV_VALUE);
 		}
-
 		//tratar jogadas coincidentes
 		conflict (collection_list, total);
 
-		//imprimir as jogadas possíveis para o turno
-		printCollectionPlay(collection_list, total);
-
-		//receber jogada válida do usuário
-		PLAY play = inputPlay (table, ((fen->turn == 'w')? 1 : 0));
-
-		//realizar mudanças das peças dadas pela jogada
-		//OBS.: Nova ordenação do vetor só é necessária quando há promoção de peão, implementado dentro desta função
-		doPlay (table, play, collection, white_pieces, pieces_num);
-
-		//updateCollection elimina peça desativada, mas não tira as peças da orden, dispensando ordenação
-		updateCollection(collection, &white_pieces, &pieces_num, (fen->turn == 'w')? 1:0);
-		updateFEN(fen, table, play);
-		changeTurn(fen);
 	}//while verifyGameState
 
 	// ********************************************************** tratar impressão de resultado
@@ -136,7 +148,9 @@ int main (int argc, char* argv[])
 	if(endGame % 2)
 	{
 		fprintf(stdout, "Cheque-mate -- Vitoria:  ");
-		if(fen->turn == 'w')
+		//OBS.: o valor de turno esta invertido pq o teste se faz sempre que o turno é virado, então
+			//a vitória se dá para a jogada anterior a inversão
+		if(fen->turn == 'b')
 			fprintf(stdout, "BRANCO");
 		else
 			fprintf(stdout, "PRETO");
@@ -150,6 +164,9 @@ int main (int argc, char* argv[])
 		}else if (endGame % 8)
 		{
 			fprintf(stdout, "Regra dos 50 Movimentos");
+		}else if(endGame % 16)
+		{
+			fprintf(stdout, "Encerramento forçado");
 		}else
 			fprintf(stdout, "Falta de Material");
 

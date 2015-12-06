@@ -516,6 +516,7 @@ char** movRook (MOV_PARAM)
 		//roque, a roque não será possível para caso o rei esteja em cheque
 		if(!riscoRei(table, obj, row, col, turn))
 		{
+			OBJETO *king = getKingTable (table, turn);
 			//o roque só será permitido caso dentro da notação FEN haja a legalização
 			for(i = 0; i < strlen(fen->rock) && white == 'R'; i++)
 			{
@@ -524,51 +525,61 @@ char** movRook (MOV_PARAM)
 				if((fen->rock[i] < 96) == turn)
 				{
 					//roque para o lado da rainha para o turno branco
-					if(fen->rock[i] == 'Q' && getObjectColumn(obj) == 0 && 7 - getObjectRow(obj) == TABLE_ROWS - 1 &&
+					if(fen->rock[i] == 'Q' && getObjectColumn(king) == 0 && 7 - getObjectRow(king) == TABLE_ROWS - 1 &&
 							table[TABLE_ROWS - 1][1] == NULL && table[TABLE_ROWS - 1][2] == NULL  && table[TABLE_ROWS - 1][3] == NULL)
 					{
-						table[TABLE_ROWS - 1][3] = table[TABLE_ROWS - 1][4];
-						table[TABLE_ROWS - 1][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
+						if(!riscoRei(table, king, TABLE_ROWS - 1, 3, turn) &&
+								!riscoRei(table, king, TABLE_ROWS - 1, 2, turn))
+						{
+							table[7][2] = table[7][4];
+							table[7][4] = NULL;
 							__mov(table, obj, TABLE_ROWS - 1, 3, turn, white, black);
-						table[TABLE_ROWS - 1][4] = table[TABLE_ROWS - 1][3];
-						table[TABLE_ROWS - 1][3] = NULL;
+							table[7][4] = table[7][2];
+							table[7][2] = NULL;
+						}
 					}
 
 					//roque para o lado da rainha para o turno preto
 					else if(fen->rock[i] == 'q' && getObjectColumn(obj) == 0 && 7 - getObjectRow(obj) == 0 &&
 							table[0][1] == NULL && table[0][2] == NULL && table[0][3] == NULL)
 					{
-						table[0][3] = table[0][4];
-						table[0][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
+						if(!riscoRei(table, king, 0, 3, turn) &&
+								!riscoRei (table, king, 0, 2, turn))
+						{
+							table[0][2] = table[0][4];
+							table[0][4] = NULL;
 							__mov(table, obj, 0, 3, turn, white, black);
-						table[0][4] = table[0][3];
-						table[0][3] = NULL;
+							table[0][4] = table[0][2];
+							table[0][2] = NULL;
+						}
 					}
 
 					//roque para o lado do reio para o turno branco
 					else if(fen->rock[i] == 'K' && getObjectColumn(obj) == TABLE_COLS - 1 && 7 - getObjectRow (obj) == TABLE_ROWS - 1 &&
 							table[TABLE_ROWS - 1][TABLE_COLS - 3] == NULL && table[TABLE_ROWS - 1][TABLE_COLS - 2] == NULL)
 					{
-						table[TABLE_ROWS - 1][5] = table[TABLE_ROWS - 1][4];
-						table[TABLE_ROWS - 1][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
-							__mov(table, obj, TABLE_ROWS - 1, TABLE_COLS - 3, turn, white, black);
-						table[TABLE_ROWS - 1][4] = table[TABLE_ROWS - 1][5];
-						table[TABLE_ROWS - 1][5] = NULL;
+						if(!riscoRei(table, king, TABLE_ROWS - 1, 5, turn))
+						{
+							table[7][6] = table[7][4];
+							table[7][4] = NULL;
+							__mov(table, obj, TABLE_ROWS - 1, TABLE_COLS - 2, turn, white, black);
+							table[7][4] = table[7][6];
+							table[7][6] = NULL;
+						}
 					}
 
 					//roque para o lado do rei para turno branco
 					else if(fen->rock[i] == 'k' && getObjectColumn(obj) == TABLE_COLS - 1  && 7 - getObjectRow(obj) == 0 &&
 							table[0][TABLE_COLS - 3] == NULL && table[0][TABLE_COLS - 2] == NULL)
 					{
-						table[0][5] = table[0][4];
-						table[0][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
-							__mov(table, obj, 0, TABLE_COLS - 3, turn, white, black);
-						table[0][4] = table[0][5];
-						table[0][5] = NULL;
+						if(!riscoRei(table, king, 0, 5, turn))
+						{
+							table[0][6] = table[0][4];
+							table[0][4] = NULL;
+							__mov(table, obj, 0, TABLE_COLS - 2, turn, white, black);
+							table[0][4] = table[0][6];
+							table[0][6] = NULL;
+						}
 					}
 				}
 			}
@@ -607,7 +618,6 @@ char** movQueen (MOV_PARAM)
 	char** list = getList(obj);
 	int size = getNList(obj);
 	list = sortList (list, size);
-
 	setList(obj, list);
 
 	return list;
@@ -734,48 +744,32 @@ char** movKing (MOV_PARAM)
 					if(fen->rock[i] == 'Q' && getObjectColumn(obj) == 4 &&
 							table[TABLE_ROWS - 1][1] == NULL && table[TABLE_ROWS - 1][2] == NULL && table[TABLE_ROWS - 1][3] == NULL)
 					{
-						table[TABLE_ROWS - 1][3] = table[TABLE_ROWS - 1][4];
-						table[TABLE_ROWS - 1][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
+						if(!riscoRei(table, obj, TABLE_ROWS - 1, 3, turn))
 							__mov(table, obj, TABLE_ROWS - 1, 2, turn, 'K', 'k');
-						table[TABLE_ROWS - 1][4] = table[TABLE_ROWS - 1][3];
-						table[TABLE_ROWS - 1][3] = NULL;
 					}
 
 					//roque para o lado da rainha em turno preto
 					else if(fen->rock[i] == 'q' && getObjectColumn(obj) == 4 &&
 							table[0][1] == NULL && table[0][2] == NULL  && table[0][3] == NULL)
 					{
-						table[0][3] = table[0][4];
-						table[0][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
+						if(!riscoRei(table, obj, 0, 3, turn))
 							__mov(table, obj, 0, 2, turn, 'K', 'k');
-						table[0][4] = table[0][3];
-						table[0][3] = NULL;
 					}
 
 					//roque para o lado do rei em turno branco
 					else if(fen->rock[i] == 'K' && getObjectColumn(obj) == 4 &&
 							table[TABLE_ROWS - 1][TABLE_COLS - 3] == NULL && table[TABLE_ROWS - 1][TABLE_COLS - 2] == NULL)
 					{
-						table[TABLE_ROWS - 1][5] = table[TABLE_ROWS - 1][4];
-						table[TABLE_ROWS - 1][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
+						if(!riscoRei(table, obj, TABLE_ROWS - 1, 5, turn))
 							__mov(table, obj, TABLE_ROWS - 1, TABLE_COLS - 2, turn, 'K', 'k');
-						table[TABLE_ROWS - 1][4] = table[TABLE_ROWS - 1][5];
-						table[TABLE_ROWS - 1][5] = NULL;
 					}
 
 					//roque para o lado do rei em turno preto
 					else if(fen->rock[i] == 'k' && getObjectColumn(obj) == 4 &&
 							table[0][TABLE_COLS - 3] == NULL && table[0][TABLE_COLS - 2] == NULL)
 					{
-						table[0][5] = table[0][4];
-						table[0][4] = NULL;
-						if(!riscoRei(table, obj, row, col, turn))
+						if(!riscoRei(table, obj, 0, 5, turn))
 							__mov(table, obj, 0,  TABLE_COLS - 2, turn, 'K', 'k');
-						table[0][4] = table[0][5];
-						table[0][5] = NULL;
 					}
 				}
 			}
@@ -867,7 +861,7 @@ void printListMovKing (MOV_PARAM)
 }
 
 //********************************** trabalho 07
-OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pieces, int pieces_num)
+OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pieces, int pieces_num, int fullTurn)
 {
 	if(table != NULL)
 	{
@@ -875,14 +869,50 @@ OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pi
 		int col = getObjectColumn(play.obj);
 
 		if(table[row][col] != NULL)
+		{
 			captured(table[row][col]);
+			setObjectTurn(play.obj, fullTurn);
+		}
 
 		table[row][col] = play.obj;
+		table[play.fromRow][play.fromCol] = NULL;
+
+		//movimento de roque
+		int diff;
+		if((getType(play.obj) == 'k' || getType(play.obj) == 'K' ) && abs(diff = play.fromCol - getObjectColumn(play.obj)) > 1)
+		{
+			//roque para rei
+			if(diff < 0)
+			{
+				table[7 - getObjectRow(play.obj)][getObjectColumn(play.obj) - 1] = table[7 - getObjectRow(play.obj)][TABLE_COLS - 1];
+				table[7 - getObjectRow(play.obj)][TABLE_COLS - 1] = NULL;
+
+				char *position = getPosition(play.obj);
+				char *newPosition = (char*)malloc(sizeof(char)*(strlen(position)+1));
+				strcpy(newPosition, position);
+				newPosition[0] -= 1;
+				changePosition(table[7 - getObjectRow(play.obj)][getObjectColumn(play.obj) - 1], newPosition);
+			}
+			//roque para rainha
+			else
+			{
+				table[7 - getObjectRow(play.obj)][getObjectColumn(play.obj) + 1] = table[7 - getObjectRow(play.obj)][0];
+				table[7 - getObjectRow(play.obj)][0] = NULL;
+
+				char *position = getPosition(play.obj);
+				char *newPosition = (char*)malloc(sizeof(char)*(strlen(position)+1));
+				strcpy(newPosition, position);
+				newPosition[0] += 1;
+				changePosition(table[7 - getObjectRow(play.obj)][getObjectColumn(play.obj) + 1], newPosition);
+			}
+		}
 
 		//nova ordenação só é necessária quando há promoção de peão, caso contrário a ordem é mantida
 		char turn = (getType(play.obj) == 'P') ? 'w' : 'b';
 		if(play.promotion != '-')
 		{
+			changeType(play.obj, play.promotion, getFunctionType(play.promotion));
+
 			//ordenar por critério de desempate e apenas as peças do turno
 			if(turn == 'w')
 				qsort(collection, white_pieces, sizeof(OBJETO*), &desempate);
@@ -904,14 +934,15 @@ OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces
 			//manter armazenado as peças ainda ativas
 			if(!getActive(collection[i]))
 			{
+//printf("peça capturada turn[%d] %c\n", turn, getType(collection[i]));
 				//peças desativadas
 				int j;
 				//deletar a peça desativada
 				deleteObject(&(collection[i]));
 
 				//puxar a lista para diminuir em uma posição, a que foi deletada
-				for(j = i; j < *pieces_num - 1; j++)
-					collection[i] = collection[i + 1];
+				for(j = i; j + 1 < *pieces_num; j++)
+					collection[j] = collection[j + 1];
 
 				collection = (OBJETO**)realloc(collection, sizeof(OBJETO*)*(--newSize));
 				//para cada update só pode haver uma captura, uma vez identificada não precisa percorrer o resto
@@ -921,8 +952,13 @@ OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces
 		}
 
 		//armazenar os novos dados
+//printf("peça branca: %d -> ", *white_pieces);
 		*white_pieces -= ((*pieces_num - newSize) * !turn); //se o turno é do Preto, então a peça capturada é a Branca
+//printf("%d\n", *white_pieces);
 		*pieces_num = newSize;
+//for(i = 0; i < *pieces_num; i++)
+//	printf("%c ", getType(collection[i]));
+//printf("\n");
 	}
 	return collection;
 }

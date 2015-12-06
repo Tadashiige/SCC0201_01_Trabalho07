@@ -538,10 +538,9 @@ int riscoRei (OBJETO *** const table, OBJETO * const obj, int row, int col, int 
 }
 
 // ************************************************** Trabalho 07
-PLAY inputPlay (OBJETO *** const table, int turn)
+PLAY inputPlay (FEN const* fen, OBJETO *** const table, int turn, int fullTurn)
 {
 	int validate = 1;
-
 	PLAY play;
 	play.obj = NULL;
 	play.promotion = '-';
@@ -554,15 +553,16 @@ PLAY inputPlay (OBJETO *** const table, int turn)
 		{
 			int row, col;
 			char cmd[6];
-			fscanf(stdin, "%s\n", cmd);
-			col = (int)('a' - cmd[0]);
-			row = (int)7 - ('1' - cmd[1]);
-
+			fscanf(stdin, "%s", cmd);
+			col = (int)(cmd[0] - 'a');
+			row = (int)('8' - cmd[1]);
+//printf("input %s:[%d][%d]\n", cmd,  row, col);
 			//coordenadas válidas e peça válida para o turno
 			if(col >= 0 && col < TABLE_COLS && row >= 0 && row < TABLE_ROWS &&
 					table[row][col] != NULL &&
 					(getType(table[row][col]) - 'a' >= 0) == !turn)
 			{
+//printf("piece found: %c\n", getType(table[row][col]));
 				int i;
 				char **list = getList (table[row][col]);
 				int nList = getNList (table[row][col]);
@@ -574,15 +574,20 @@ PLAY inputPlay (OBJETO *** const table, int turn)
 				{
 					//ajuste para comparação, caso haja promoção na notação ela não termina em número, nem é en passant.
 					int adjList = adj && (list[i][strlen(list[i]) - 1] >= 'B' && list[i][strlen(list[i]) - 1] <= 'R');
-
+//printf("compare: %.2s <> %.2s\n", list[i] + (strlen(list[i]) - 1 - 1) - adjList, &(cmd[2]));
 					//existe jogada na lista da peça dada pela coordenada do destino
-					if(!strncmp(list[i] + (strlen(list[i]) - 1 - 1) - adj, &cmd[2], 2))
+					if(!strncmp(list[i] + (strlen(list[i]) - 1 - 1) - adjList, &(cmd[2]), 2))
 					{
 						play.obj = table[row][col];
 						play.fromRow = row;
 						play.fromCol = col;
-						if(adj)
+						if(adjList)
 							play.promotion = list[i][strlen(list[i]) - 1];
+
+						cmd[4] = '\0';
+						char *newPosition = (char*) malloc(sizeof(char)*(3));
+						strcpy(newPosition, &(cmd[2]));
+						changePosition(play.obj, newPosition);
 
 						validate = 0;
 
@@ -598,35 +603,83 @@ PLAY inputPlay (OBJETO *** const table, int turn)
 	return play;
 }
 
-int verifyGameState (OBJETO **const collection, const int pieces_num, FEN *fen)
+int verifyGameState (OBJETO *** const table, OBJETO **const collection, const int pieces_num, FEN *fen)
 {
-	return  1 * chequeMate(collection, pieces_num, fen->turn) +
-			2 * regraAfogamento (collection, pieces_num, fen->turn) +
+	return  1 * chequeMate(table, collection, pieces_num, (fen->turn == 'w')?1:0) +
+			2 * regraAfogamento (table, collection, pieces_num, (fen->turn == 'w')?1:0) +
 			4 * regra50movimento (fen) +
-			8 * regraMaterial (collection, pieces_num);
+			8 * regraMaterial (collection, pieces_num) +
+			16 * forceEnd(fen);
 }
 
 //função para verificar vitória
 //retorna 1
-int chequeMate (OBJETO ** const collection, const int pieces_num, int turn)
+int chequeMate (OBJETO *** const table, OBJETO ** const collection, const int pieces_num, int turn)
 {
+	if(collection != NULL)
+	{
+		int i;
+		int result = 0;
+		for(i = 0; i < pieces_num; i++)
+		{
+			if(getNList(collection[i]))
+				result++;
+		}
+		//se não existe jogadas possíveis e o rei está em cheque, result = 0
+		OBJETO *king = getKingTable(table, turn);
+		if(!result && riscoRei(table, king, 7 - getObjectRow(king), getObjectColumn(king), turn))
+			return !result;
+	}
 	return 0;
 }
 
 //funções para verificar empate
 //retorna 1
-int regraAfogamento (OBJETO **const collection, const int pieces_num, int turn)
+int regraAfogamento (OBJETO *** const table, OBJETO **const collection, const int pieces_num, int turn)
 {
+	if(collection != NULL)
+	{
+		int i;
+		int result = 0;
+		for(i = 0; i < pieces_num; i++)
+		{
+			if(getNList(collection[i]))
+				result++;
+		}
+		//se não existe jogadas possíveis e o rei NÃO está em cheque, result = 0
+		OBJETO *king = getKingTable(table, turn);
+		if(!result && !riscoRei(table, king, 7 - getObjectRow(king), getObjectColumn(king), turn))
+			return !result;
+	}
 	return 0;
 }
+
 //retorna 1
 int regra50movimento (FEN *fen)
 {
+	if(fen != NULL && fen->halfTurn >= 50)
+		return 1;
 	return 0;
 }
 //retorna 1
 int regraMaterial (OBJETO ** const collection, const int pieces_num)
 {
+	if(collection != NULL)
+	{
+		int i;
+		int sum = 0;
+		for(i = 0; i < pieces_num; i++)
+		{
+			sum += getValue(collection[i]);
+		}
+		//O cavalo e Bispo tem os mesmos pontos (325)
+		if( sum == 2*point('K') + point('N'))
+			return 1;
+	}
 	return 0;
 }
 
+int forceEnd (FEN *fen)
+{
+	return fen->turn == 'e';
+}

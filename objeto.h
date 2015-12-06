@@ -30,7 +30,7 @@ void deleteObject (OBJETO **obj);
 void changeType (OBJETO *obj, char type, funcPtr mov);
 
 //função irá mudar a posição da peça
-void changePosition (OBJETO *obj, char *position, int fullTurn);
+void changePosition (OBJETO *obj, char *position);
 
 //função irá marcar a peça como capturada
 void captured (OBJETO *obj);
@@ -42,6 +42,7 @@ char* getPosition (OBJETO *obj);
 funcPtr getFunctionMov(OBJETO *obj);
 int getActive (OBJETO *obj);
 int getObjectTurn (OBJETO *obj);
+void setObjectTurn (OBJETO *obj, int fullTurn);
 
 char** getList (OBJETO *obj);
 void setList (OBJETO *obj, char** list);
@@ -51,5 +52,8 @@ void setNList (OBJETO *obj, int size);
 //funções de print sobre objetos e suas coleções
 void printObject (OBJETO *const obj);
 void printCollectionObject (OBJETO **const collectionObj, int size);
+
+OBJETO *getKingTable (OBJETO *** const table, int turn);
+char** clearList (OBJETO *obj);
 
 #endif

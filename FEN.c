@@ -578,113 +578,121 @@ FEN* updateFEN (FEN* fen, OBJETO *** const table, PLAY play)
 				if(spaces)
 				{
 					update = (char*)realloc(update, sizeof(char)*(++size + 1));
-					update[size - 1] = '0' + size;
+					update[size - 1] = '0' + spaces;
+					update[size] = '\0';
 				}
 				//acréscimo das peças na notação
 				update = (char*)realloc(update, sizeof(char)*(++size + 1));
 				update[size - 1] = getType(table[i][j]);
+				update[size] = '\0';
+				spaces = 0;
 			}
 		}
 		if(spaces)
 		{
 			size = strlen(update);
 			update = (char*)realloc(update, sizeof(char)*(++size + 1));
-			update[size - 1] = '0' + size;
+			update[size - 1] = '0' + spaces;
+			update[size] = '\0';
 		}
 		//adicionar uma barra para cada linha do tabuleiro
 		size = strlen(update);
 		update = (char*)realloc(update, sizeof(char)*(++size + 1));
 		update[size - 1] = '/';
+		update[size] = '\0';
 	}
 
 	//eliminar a ultima '/' da string
 	size = strlen(update);
 	update = (char*)realloc(update, sizeof(char)*(--size + 1));
-	update[size] = '\0';
+	update[size] = '\0'; //lembrar que size foi descrecido e não acrescido, portanto é [size]
 
 	int turn = (fen->turn == 'w') ? 1: 0;
 
 	// ********************************* verificar condições de roque futuro
 	char *newRock = (char*)malloc(sizeof(char));
+	int sizeRock;
 	strcpy(newRock, "");
-	int adj = 7;
+	int adj = 7, count = 0;
+	char *paux = fen->rock;
 
-	//analisar a jogada anterior
-	turn = !turn;
-
-	strcpy(fen->rock, "-");
-	if(getType(table[adj * turn][4]) == 'k' - (32 * turn))
+	//analisar roque BRANCO
+	if(table[TABLE_ROWS - 1][4] != NULL && getType(table[TABLE_ROWS - 1][4]) == 'K' && paux[count] < 'a' && paux[count] != '-')
 	{
-		int rockSize = strlen(fen->rock);
-		int newSize = 0;
-		char *paux = fen->rock;
-		int i;
-		for(i = 0; i < rockSize; i++)
+		if(getType(table[TABLE_ROWS - 1][TABLE_COLS - 1]) == 'R' && paux[count] == 'K')
 		{
-			if(paux[i] == 'q' - !turn * 32)
-			{
-				newSize = strlen(newRock);
-				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
-				newRock[newSize - 1] = 'q' - !turn * 32;
-			}
-			//verificar se a torre para lado da rainha não foi movida
-			else if(paux[i] == 'q' - turn * 32 && getType(table[adj * turn][0]) == 'q' - turn * 32)
-			{
-				newSize = strlen(newRock);
-				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
-				newRock[newSize - 1] = 'q' - turn * 32;
-			}
-
-			else if(paux[i] == 'k' - !turn * 32)
-			{
-				newSize = strlen(newRock);
-				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
-				newRock[newSize - 1] = 'k' - !turn * 32;
-			}
-			//verificar se a torre para o lado do rei não foi movida
-			else if(paux[i] == 'k' - turn * 32 && getType(table[adj * turn][0]) == 'k' - turn * 32)
-			{
-				newSize = strlen(newRock);
-				newRock = (char*)realloc(newRock, sizeof(char)*(++newSize + 1));
-				newRock[newSize - 1] = 'k' - turn * 32;
-			}
-
-		}//for
-		if(newSize)
-			strcpy(fen->rock, newRock); //->rock contem por padrão "", a ser modificada pelo switch
+			sizeRock = strlen(newRock);
+			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
+			newRock[sizeRock - 1] = 'K';
+			newRock[sizeRock] = '\0';
+			count++;
+		}
+		if(getType(table[TABLE_ROWS - 1][0]) == 'R' && paux[count] == 'Q')
+		{
+			sizeRock = strlen(newRock);
+			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
+			newRock[sizeRock - 1] = 'Q';
+			newRock[sizeRock] = '\0';
+			count++;
+		}
 	}
+	//analisar roque PRETO
+	if(table[0][4] != NULL && getType(table[0][4]) == 'k' && paux[count] > 'a' && paux[count] != '-')
+	{
+		if(getType(table[0][TABLE_COLS - 1]) == 'r' && paux[count] == 'k')
+		{
+			sizeRock = strlen(newRock);
+			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
+			newRock[sizeRock - 1] = 'k';
+			newRock[sizeRock] = '\0';
+			count++;
+		}
+		if(getType(table[0][0]) == 'r' && paux[count] == 'q')
+		{
+			sizeRock = strlen(newRock);
+			newRock = (char*)realloc(newRock, sizeof(char)*(++sizeRock + 1));
+			newRock[sizeRock - 1] = 'q';
+			newRock[sizeRock] = '\0';
+			count++;
+		}
+	}
+	//atualizar as disponibilidades de rock
+	if((sizeRock = strlen(newRock)))
+		strcpy(fen->rock, newRock);
+	else
+		strcpy(fen->rock , "-");
+	free(newRock);
 
 	// ********************************* verificar descartar formação de en passant anterior e verificar a atual
 	strcpy(fen->pass, "-");
-	for(i = 0; i < TABLE_COLS; i++)
+	//se o turno é do White então os peões estão na linha 5 da matriz, senão, na linha 2 da matriz.
+	if(getType(play.obj) == 'p' - turn * 32 && (7 - getObjectRow(play.obj)) == (3 + turn * 1))
 	{
-		//se o turno é do White então os peões estão na linha 5 da matriz, senão, na linha 2 da matriz.
-		if(table[adj * turn + 2 - 4*turn][i] == play.obj && getType(play.obj) == 'p' - turn * 32)
-		{
-			//função update será chamada antes de atualizar a coordenada da struct da peça
-			int diff = abs(play.fromRow - getObjectRow(play.obj));
+//printf("updateFEN_en passant: fromRow (%d) - (7 - Row[%d])\n", play.fromRow, getObjectRow(play.obj));
+		//função update será chamada antes de atualizar a coordenada da struct da peça
+		int diff = abs(play.fromRow - (7 - getObjectRow(play.obj)));
 
-			//se houve salto de 2 casas do peão
-			if(diff == 2)
-			{
-				char newPass[3];
-				newPass[0] = 'a' + i;
-				newPass[1] = '1' + 7*!turn - 1 + 2*turn;
-				newPass[2] = '/';
-				strcpy(fen->pass, newPass);
-			}
-			break;
+		//se houve salto de 2 casas do peão
+		if(diff == 2)
+		{
+			char newPass[3];
+			newPass[0] = 'a' + getObjectColumn(play.obj);
+			newPass[1] = '1' + 2 + !turn * 3;
+			newPass[2] = '\0';
+			strcpy(fen->pass, newPass);
 		}
 	}
 
 	// ********************************** verificar o acréscimo do meio turno
 		//se movimento foi feito de peão ou foi feito uma captura
-	if(getType(play.obj) == 'p' - turn * 32 || fen->fullTurn == getObjectTurn (play.obj))
+	if(getType(play.obj) != 'p' - turn * 32 && getObjectTurn(play.obj) != fen->fullTurn)
 		fen->halfTurn ++;
+	else
+		fen->halfTurn = 0;
 
 	// ********************************** verificar o acréscimo do turno completo
 		//se a jogada foi feita pela lado Preto
-	if(turn)
+	if(!turn)
 		fen->fullTurn++;
 
 	//guardar a nova notação do estado atual do tabuleiro

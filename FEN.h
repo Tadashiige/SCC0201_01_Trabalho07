@@ -24,6 +24,8 @@
 #include "objeto.h"
 #include "peca.h"
 
+funcPtr getFunctionType (char type);
+
 //função irá extrair todas as peças da notação FEN
 OBJETO ** extractTableFEN (char* pieces, int *tam, int *white);
 

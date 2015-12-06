@@ -38,5 +38,6 @@ void printListMovKing (MOV_PARAM);
 
 //*********************** trabalho 07
 OBJETO ** updateCollection (OBJETO ** collection, int *white_pieces, int *pieces_num, int turn);
+OBJETO ** doPlay(OBJETO *** table, PLAY play, OBJETO ** collection, int white_pieces, int pieces_num, int fullTurn);
 
 #endif

@@ -167,7 +167,7 @@ char** getList (OBJETO *obj)
 
 void setNList (OBJETO *obj, int size)
 {
-	if(obj != NULL && size > 0)
+	if(obj != NULL && size >= 0)
 	{
 		obj->nList = size;
 	}
@@ -189,6 +189,14 @@ int getObjectTurn (OBJETO *obj)
 		return obj->fullTurn;
 	}
 	return 0;
+}
+
+void setObjectTurn (OBJETO *obj, int fullTurn)
+{
+	if(obj != NULL)
+	{
+		obj->fullTurn = fullTurn;
+	}
 }
 
 /**
@@ -237,17 +245,14 @@ void changeType (OBJETO *obj, char type, funcPtr mov)
  *	RETORNO:
  *		VOID
  */
-void changePosition (OBJETO *obj, char *position, int fullTurn)
+void changePosition (OBJETO *obj, char *position)
 {
 	if(obj != NULL && position != NULL &&
 			strlen(position) > 1 &&
-			(position[0] >= 'a' && position[0] <= 'h' && position[1] >= '1' && position[1] <= '8') &&
-			fullTurn > 0)
+			(position[0] >= 'a' && position[0] <= 'h' && position[1] >= '1' && position[1] <= '8'))
 	{
-		//todo fazer verificação de peão para chamada de changeType na promoção
 		strcpy(obj->position, position);
 		free(position);
-		obj->fullTurn = fullTurn;
 	}
 }
 
@@ -326,4 +331,47 @@ void printCollectionPlay (OBJETO **collection, int size)
 			printPlay(collection[i]);
 		}
 	}
+}
+
+OBJETO *getKingTable (OBJETO *** const table, int turn)
+{
+	OBJETO *king = NULL;
+	if(table != NULL)
+	{
+		int i, j;
+		for(i = 0; i < TABLE_ROWS; i++)
+		{
+			for(j = 0; j < TABLE_COLS; j++)
+			{
+				if(table[i][j] != NULL && getType(table[i][j]) == 'k' - turn * 32)
+				{
+					king = table[i][j];
+					i = TABLE_ROWS;
+					break;
+				}
+			}
+		}
+	}
+	return king;
+}
+
+char** clearList (OBJETO *obj)
+{
+	char** list= NULL;
+	if(obj != NULL)
+	{
+		char** actualList = getList (obj);
+		int size = getNList (obj);
+		int i;
+		for(i = 0; i < size; i++)
+		{
+			free(actualList[i]);
+		}
+		actualList = (char**) realloc(actualList, sizeof(char*));
+		setList(obj, actualList);
+		setNList(obj, 0);
+
+		list = actualList;
+	}
+	return list;
 }
